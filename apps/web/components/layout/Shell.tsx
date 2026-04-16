@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { StatusBar } from "./StatusBar";
+import { CommandPalette } from "./CommandPalette";
+import { ShortcutOverlay } from "./ShortcutOverlay";
+import { GranularitySelector } from "./GranularitySelector";
+import { registerShortcuts } from "@/lib/keyboard-shortcuts";
+import { loadGranularityPreference } from "@/lib/granularity";
 import type { GranularityLevel, EditorView } from "@plugin11/shared";
 
 interface ShellProps {
@@ -11,11 +16,93 @@ interface ShellProps {
   children: React.ReactNode;
 }
 
+// Demo data for command palette
+const DEMO_NOTES = [
+  { id: "n1", type: "note" as const, title: "Login Flow", subtitle: "Auth notebook" },
+  { id: "n2", type: "note" as const, title: "SSO Integration", subtitle: "Auth notebook" },
+  { id: "n3", type: "note" as const, title: "Stripe Integration", subtitle: "Payment notebook" },
+  { id: "n4", type: "note" as const, title: "User Table", subtitle: "Data notebook" },
+  { id: "n5", type: "note" as const, title: "Dashboard Layout", subtitle: "UI/UX notebook" },
+];
+
+const DEMO_NOTEBOOKS = [
+  { id: "nb1", type: "notebook" as const, title: "Auth", subtitle: "3 notes" },
+  { id: "nb2", type: "notebook" as const, title: "Payment", subtitle: "2 notes" },
+  { id: "nb3", type: "notebook" as const, title: "UI/UX", subtitle: "4 notes" },
+];
+
+const DEMO_RECENT = [
+  { id: "n1", type: "recent" as const, title: "Login Flow", subtitle: "Edited 5 min ago" },
+  { id: "n3", type: "recent" as const, title: "Stripe Integration", subtitle: "Edited 1 hour ago" },
+];
+
 export function Shell({ workspaceId, children }: ShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [granularity, setGranularity] = useState<GranularityLevel>("intermediate");
   const [view, setView] = useState<EditorView>("notes");
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // Load saved granularity preference
+  useEffect(() => {
+    setGranularity(loadGranularityPreference());
+  }, []);
+
+  // Cycle through views
+  const cycleView = useCallback(() => {
+    const views: EditorView[] = ["notes", "code", "split", "preview"];
+    setView((current: EditorView) => {
+      const idx = views.indexOf(current);
+      return views[(idx + 1) % views.length];
+    });
+  }, []);
+
+  // Register keyboard shortcuts
+  useEffect(() => {
+    return registerShortcuts((action) => {
+      switch (action) {
+        case "command-palette":
+          setCommandPaletteOpen((prev) => !prev);
+          break;
+        case "toggle-chat":
+          setRightPanelOpen((prev) => !prev);
+          break;
+        case "toggle-sidebar":
+          setSidebarOpen((prev) => !prev);
+          break;
+        case "toggle-view":
+          cycleView();
+          break;
+        case "show-shortcuts":
+          setShortcutsOpen((prev) => !prev);
+          break;
+        case "manual-snapshot":
+          // Trigger snapshot save
+          break;
+        case "undo":
+          // Trigger note-level undo
+          break;
+        case "redo":
+          // Trigger redo
+          break;
+      }
+    });
+  }, [cycleView]);
+
+  const handleCommandSelect = (item: { id: string; type: string; title: string }) => {
+    if (item.type === "action") {
+      switch (item.id) {
+        case "toggle-view":
+          cycleView();
+          break;
+        case "open-settings":
+          // Navigate to settings
+          break;
+      }
+    }
+    // For notes/notebooks, would navigate to the item
+  };
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -31,13 +118,21 @@ export function Shell({ workspaceId, children }: ShellProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-sm font-bold text-primary">Plugin 11</span>
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-[9px] font-black text-primary-foreground">
+              11
+            </div>
+            <span className="text-sm font-bold">Plugin 11</span>
+          </div>
           <span className="text-sm text-muted-foreground">Workspace</span>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Search */}
-          <button className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent">
+          {/* Search / Command palette trigger */}
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent"
+          >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -90,6 +185,22 @@ export function Shell({ workspaceId, children }: ShellProps) {
         onGranularityChange={setGranularity}
         view={view}
         onViewChange={setView}
+      />
+
+      {/* Command palette overlay */}
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onSelect={handleCommandSelect}
+        notes={DEMO_NOTES}
+        notebooks={DEMO_NOTEBOOKS}
+        recentNotes={DEMO_RECENT}
+      />
+
+      {/* Shortcuts overlay */}
+      <ShortcutOverlay
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
       />
     </div>
   );

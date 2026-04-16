@@ -1,7 +1,7 @@
 "use client";
 
 import type { GranularityLevel, EditorView } from "@plugin11/shared";
-import { GRANULARITY_LABELS } from "@plugin11/shared";
+import { GranularitySelector } from "./GranularitySelector";
 
 interface StatusBarProps {
   granularity: GranularityLevel;
@@ -9,8 +9,6 @@ interface StatusBarProps {
   view: EditorView;
   onViewChange: (view: EditorView) => void;
 }
-
-const granularityLevels: GranularityLevel[] = ["beginner", "intermediate", "advanced"];
 
 export function StatusBar({
   granularity,
@@ -27,23 +25,11 @@ export function StatusBar({
           <span>AI: Connected</span>
         </div>
 
-        {/* Granularity toggle */}
-        <div className="flex items-center gap-1">
-          <span className="mr-1">Granularity:</span>
-          {granularityLevels.map((level) => (
-            <button
-              key={level}
-              onClick={() => onGranularityChange(level)}
-              className={`rounded px-1.5 py-0.5 transition-colors ${
-                granularity === level
-                  ? "bg-primary/20 text-primary"
-                  : "hover:bg-accent hover:text-foreground"
-              }`}
-            >
-              {GRANULARITY_LABELS[level]}
-            </button>
-          ))}
-        </div>
+        {/* Granularity selector */}
+        <GranularitySelector
+          value={granularity}
+          onChange={onGranularityChange}
+        />
       </div>
 
       <div className="flex items-center gap-4">
