@@ -16,6 +16,13 @@ export { TimeEstimator } from "./time-estimator";
 export { detectIntent, DebouncedIntentDetector } from "./intent-detector";
 export { APIServer } from "./cloud/api-server";
 export * from "./handlers";
+export {
+  parseMarkdownFile,
+  parseMarkdownFiles,
+  parsePDFBuffer,
+  parseNotionExport,
+  parseNotionMarkdownExport,
+} from "./importers";
 
 // ── Intent types ──
 export type { IntentType, DetectedIntent } from "./intent-detector";

@@ -17,11 +17,13 @@ import {
   DecisionBlockExtension,
 } from "@plugin11/editor-extensions";
 import { noteRoomName, YJS_KEYS } from "@plugin11/shared";
+import type { EditorView } from "@plugin11/shared";
 import { ViewToggle } from "./ViewToggle";
 import { CodeView } from "./CodeView";
 import { PresenceAvatars } from "../collaboration/PresenceAvatars";
 import { BotText } from "../ai/BotText";
 import { ImplementationProgress } from "../ai/ImplementationProgress";
+import { PreviewPanel } from "../preview/PreviewPanel";
 
 interface NoteEditorProps {
   workspaceId: string;
@@ -30,7 +32,7 @@ interface NoteEditorProps {
 }
 
 export function NoteEditor({ workspaceId, notebookId, noteId }: NoteEditorProps) {
-  const [view, setView] = useState<"notes" | "code" | "split">("notes");
+  const [view, setView] = useState<EditorView>("notes");
   const [isAIWorking, setIsAIWorking] = useState(false);
 
   const ydoc = useMemo(() => new Y.Doc(), []);
@@ -106,15 +108,24 @@ export function NoteEditor({ workspaceId, notebookId, noteId }: NoteEditorProps)
 
       {/* Editor content */}
       <div className="flex flex-1 overflow-hidden">
-        {(view === "notes" || view === "split") && (
-          <div className={`flex-1 overflow-auto ${view === "split" ? "border-r border-border" : ""}`}>
-            <EditorContent editor={editor} className="h-full" />
-          </div>
-        )}
-        {(view === "code" || view === "split") && (
-          <div className="flex-1 overflow-auto">
-            <CodeView noteId={noteId} />
-          </div>
+        {view === "preview" ? (
+          <PreviewPanel
+            files={{}}
+            onClose={() => setView("notes")}
+          />
+        ) : (
+          <>
+            {(view === "notes" || view === "split") && (
+              <div className={`flex-1 overflow-auto ${view === "split" ? "border-r border-border" : ""}`}>
+                <EditorContent editor={editor} className="h-full" />
+              </div>
+            )}
+            {(view === "code" || view === "split") && (
+              <div className="flex-1 overflow-auto">
+                <CodeView noteId={noteId} />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

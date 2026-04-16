@@ -1,6 +1,8 @@
 "use client";
 
-type View = "notes" | "code" | "split";
+import type { EditorView } from "@plugin11/shared";
+
+type View = EditorView;
 
 interface ViewToggleProps {
   view: View;
@@ -12,6 +14,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
     { id: "notes", label: "Notes" },
     { id: "code", label: "Code" },
     { id: "split", label: "Split" },
+    { id: "preview", label: "Preview" },
   ];
 
   return (
