@@ -1,0 +1,28 @@
+{
+  "name": "setup-agents-plugin11",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build --filter='*'",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "clean": "turbo clean",
+    "db:generate": "pnpm --filter @plugin11/db generate",
+    "db:push": "pnpm --filter @plugin11/db push"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp"
+    ]
+  }
+}
