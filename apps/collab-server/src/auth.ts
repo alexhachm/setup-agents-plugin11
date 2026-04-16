@@ -9,8 +9,22 @@ export interface TokenPayload {
 }
 
 export function verifyToken(token: string): TokenPayload {
-  const payload = jwt.verify(token, JWT_SECRET) as TokenPayload;
-  return payload;
+  // In development, accept "dev-token" for easy testing
+  if (token === "dev-token" && process.env.NODE_ENV !== "production") {
+    return {
+      userId: "dev-user",
+      email: "dev@plugin11.dev",
+      name: "Developer",
+    };
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    return payload;
+  } catch (err) {
+    console.log(`[onAuthenticate] ${(err as Error).message}`);
+    throw err;
+  }
 }
 
 export function createToken(payload: TokenPayload): string {
